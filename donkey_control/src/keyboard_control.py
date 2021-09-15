@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Node for control PCA9685 using AckermannDriveStamped msg 
+Node for control PCA9685 using teleop_twist_keyboard msg 
 referenced from donekycar
 url : https://github.com/autorope/donkeycar/blob/dev/donkeycar/parts/actuator.py
 """
@@ -9,9 +9,13 @@ url : https://github.com/autorope/donkeycar/blob/dev/donkeycar/parts/actuator.py
 import time
 import rospy
 from threading import Thread
-from ackermann_msgs.msg import AckermannDriveStamped
+from geometry_msgs.msg import Twist
 
-K_DIVIDE_GAMEPAD = 3
+STEER_STEP = 1024
+SPEED_STEP = 1024
+
+speed_pulse = 0
+steering_pulse = 0
 
 class PCA9685:
     """
@@ -91,13 +95,13 @@ class PWMThrottle:
         right_motor_speed = throttle
 
         if steering < 0:
-            left_motor_speed *= (1.0 - (-steering/4095))
+            left_motor_speed *= (1.0 - (-steering/4095)) 
         elif steering > 0:
             right_motor_speed *= (1.0 - (steering/4095))
 
-        left_pulse = int(left_motor_speed) / K_DIVIDE_GAMEPAD     
-        right_pulse = int(right_motor_speed) / K_DIVIDE_GAMEPAD 
- 
+        left_pulse = int(left_motor_speed)   
+        right_pulse = int(right_motor_speed)
+
         print(
             "left_pulse : "
             + str(left_pulse)
@@ -105,6 +109,7 @@ class PWMThrottle:
             + "right_pulse : "
             + str(right_pulse)
         )
+
         if left_motor_speed > 0:
 	        #rear motor
   	        self.controller.pwm.set_pwm(self.controller.channel+ 5,0,left_pulse)
@@ -147,25 +152,44 @@ class PWMThrottle:
         self.run(0) #stop vehicle
 
 class Vehicle(object):
-    def __init__(self, name="donkey_ros"):       
-
+    def __init__(self, name="donkey_ros"):
+     
         throttle_controller = PCA9685(channel=0, address=0x40, busnum=1)
         self._throttle = PWMThrottle(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
         rospy.loginfo("Throttle Controller Awaked!!") 
         
         self._name = name
         self._teleop_sub = rospy.Subscriber(
-            "/donkey_teleop",
-            AckermannDriveStamped,
-            self.joy_callback,
+            "/cmd_vel",
+            Twist,
+            self.keyboard_callback,
             queue_size=1,
             buff_size=2 ** 24,
         )
-        rospy.loginfo("Teleop Subscriber Awaked!! Waiting for joystick...")
+        rospy.loginfo("Keyboard Subscriber Awaked!! Waiting for keyboard...")
 
-    def joy_callback(self, msg):
-        speed_pulse = msg.drive.speed
-        steering_pulse = msg.drive.steering_angle
+    def keyboard_callback(self, msg):
+
+        global speed_pulse
+        global steering_pulse
+        rospy.loginfo("Received a /cmd_vel message!")
+        rospy.loginfo("Linear Components: [%f, %f, %f]"%(msg.linear.x, msg.linear.y, msg.linear.z))
+        rospy.loginfo("Angular Components: [%f, %f, %f]"%(msg.angular.x, msg.angular.y, msg.angular.z))
+
+        # Do velocity processing here:
+        # Use the kinematics of your robot to map linear and angular velocities into motor commands
+        speed_pulse += msg.linear.x*SPEED_STEP
+
+        if speed_pulse > 4095 :
+           speed_pulse = 4095
+        if speed_pulse < -4095 :
+           speed_pulse = -4095 
+           
+        steering_pulse += msg.angular.z*STEER_STEP
+        if steering_pulse >  4095:
+           steering_pulse = 4095
+        if steering_pulse < -4095 :
+           steering_pulse = - 4095
 
         print(
             "speed_pulse : "

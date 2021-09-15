@@ -19,7 +19,7 @@ import time
 
 class PCA9685:
     """
-    PWM motor controler using PCA9685 boards.
+    PWM motor controller using PCA9685 boards.
     This is used for most RC Cars
     """
 
@@ -68,7 +68,7 @@ class PCA9685:
 
 class PWMThrottle:
     """
-    Wrapper over a PWM motor cotnroller to convert -1 to 1 throttle
+    Wrapper over a PWM motor cotroller to convert -1 to 1 throttle
     values to PWM pulses.
     """
     MIN_THROTTLE = -1
@@ -97,12 +97,14 @@ class PWMThrottle:
         if steering < 0:
             left_motor_speed *= (1.0 - (-steering/4095))
         elif steering > 0:
-            right_motor_speed *= (1.0 - steering/4095)
-        
+            right_motor_speed *= (1.0 - (steering/4095))
+
+        left_pulse = int(left_motor_speed)
+        right_pulse = int(right_motor_speed)
+
         if left_motor_speed > 0:
-            left_pulse = int(left_motor_speed)
-	    #rear motor
-  	    self.controller.pwm.set_pwm(self.controller.channel+ 5,0,left_pulse)
+ 	        #rear motor
+  	        self.controller.pwm.set_pwm(self.controller.channel+ 5,0,left_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+ 4,0,0)
             self.controller.pwm.set_pwm(self.controller.channel+ 3,0,4095)
             #front motor
@@ -110,9 +112,8 @@ class PWMThrottle:
             self.controller.pwm.set_pwm(self.controller.channel+ 7,0,4095)
             self.controller.pwm.set_pwm(self.controller.channel+ 8,0,0)
         else:
-            left_pulse = int(left_motor_speed)
-	    #rear motor
-  	    self.controller.pwm.set_pwm(self.controller.channel+ 5,0,-left_pulse)
+	        #rear motor
+  	        self.controller.pwm.set_pwm(self.controller.channel+ 5,0,-left_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+ 3,0,0)
             self.controller.pwm.set_pwm(self.controller.channel+ 4,0,4095)
             #front motor
@@ -121,23 +122,21 @@ class PWMThrottle:
             self.controller.pwm.set_pwm(self.controller.channel+ 7,0,0)
 
         if right_motor_speed > 0:
-            right_pulse = int(right_motor_speed)
             #rear motor
             self.controller.pwm.set_pwm(self.controller.channel+ 0,0,right_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+ 2,0,0) 
             self.controller.pwm.set_pwm(self.controller.channel+ 1,0,4095)
             #front motor
-	    self.controller.pwm.set_pwm(self.controller.channel+11,0,right_pulse)
+	        self.controller.pwm.set_pwm(self.controller.channel+11,0,right_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+ 9,0,4095)
             self.controller.pwm.set_pwm(self.controller.channel+10,0,0)
         else:
-            right_pulse = int(right_motor_speed)
             #rear motor
             self.controller.pwm.set_pwm(self.controller.channel+ 0,0,-right_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+ 1,0,0) 
             self.controller.pwm.set_pwm(self.controller.channel+ 2,0,4095)
             #front motor
-	    self.controller.pwm.set_pwm(self.controller.channel+11,0,-right_pulse)
+	        self.controller.pwm.set_pwm(self.controller.channel+11,0,-right_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+10,0,4095)
             self.controller.pwm.set_pwm(self.controller.channel+ 9,0,0)
 
@@ -145,7 +144,7 @@ class PWMThrottle:
         self.run(0) #stop vehicle
 
 class ServoConvert:
-    def __init__(self, id=1, center_value=0, range=8192, direction=1):
+    def __init__(self, id=1, center_value=0, range=8190, direction=1):
         self.value = 0.0
         self.value_out = center_value
         self._center = center_value
@@ -186,10 +185,10 @@ class DkLowLevelCtrl:
 
         self.actuators = {}
         self.actuators["throttle"] = ServoConvert(
-            id=1, center_value=0, range=8192, direction=1
+            id=1, center_value=0, range=8190, direction=1
         )
         self.actuators["steering"] = ServoConvert(
-            id=2, center_value=0, range=8192, direction=1
+            id=2, center_value=0, range=8190, direction=1
         )  # -- positive left
         rospy.loginfo("> Actuators corrrectly initialized")
 
