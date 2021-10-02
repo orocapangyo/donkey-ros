@@ -16,6 +16,8 @@ import rospy
 from geometry_msgs.msg import Twist
 import time
 
+STEER_CENTER=0
+STEER_LIMIT = 4095
 
 class PCA9685:
     """
@@ -46,8 +48,8 @@ class PCA9685:
         self.channel = channel
         time.sleep(init_delay)  # "Tamiya TBLE-02" makes a little leap otherwise
 
-        self.pulse = 0
-        self.prev_pulse = 0
+        self.pulse = STEER_CENTER
+        self.prev_pulse = STEER_CENTER
         self.running = True
 
     def set_pwm(self, pulse):
@@ -144,7 +146,7 @@ class PWMThrottle:
         self.run(0) #stop vehicle
 
 class ServoConvert:
-    def __init__(self, id=1, center_value=0, range=8190, direction=1):
+    def __init__(self, id=1, center_value=STEER_CENTER, range=STEER_LIMIT*2, direction=1):
         self.value = 0.0
         self.value_out = center_value
         self._center = center_value
@@ -188,7 +190,7 @@ class DkLowLevelCtrl:
             id=1, center_value=0, range=8190, direction=1
         )
         self.actuators["steering"] = ServoConvert(
-            id=2, center_value=0, range=8190, direction=1
+            id=2, center_value=STEER_CENTER, range=STEER_LIMIT*2, direction=1
         )  # -- positive left
         rospy.loginfo("> Actuators corrrectly initialized")
 
@@ -210,10 +212,10 @@ class DkLowLevelCtrl:
         )
         rospy.loginfo("> Subscriber corrrectly initialized")
 
-        self.throttle_cmd = 1.0
-        self.throttle_chase = 1.0
+        self.throttle_cmd = 0.0
+        self.throttle_chase = 0.0
         self.steer_cmd = 0.0
-        self.steer_chase = 1.0
+        self.steer_chase = 0.0
 
         self._debud_command_msg = Twist()
 
@@ -237,8 +239,7 @@ class DkLowLevelCtrl:
         print(self.throttle_chase, self.steer_chase)
 
     def compose_command_velocity(self):
-        self.throttle = saturate(self.throttle_cmd * self.throttle_chase, -1, 1)
-
+        self.throttle = saturate(self.throttle_cmd + self.throttle_chase, -1, 1)
         # -- Add steering
         self.steer = saturate(self.steer_cmd + self.steer_chase, -1, 1)
 
@@ -259,8 +260,7 @@ class DkLowLevelCtrl:
 
         self.set_pwm_pulse(self.actuators["throttle"].value_out, self.actuators["steering"].value_out)
 
-        print( "throttle value : " + str(self.actuators["throttle"].value_out))
-        print( "steering value : " + str(self.actuators["steering"].value_out))
+        print( "throttle: " + str(self.actuators["throttle"].value_out) +  ", steering: " + str(self.actuators["steering"].value_out))
 
 
     def set_pwm_pulse(self, speed_pulse, steering_pulse):

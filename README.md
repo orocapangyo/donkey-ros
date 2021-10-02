@@ -7,8 +7,10 @@
 https://github.com/Road-Balance/donkey_ros
 
 <p align="center">
-    <img src="./Images/blob_tracking.gif" width="400" />
     <img src="./Images/joy_control.gif" width="400" />
+    <img src="./Images/keyboard_control.gif" width="400" />
+    <img src="./Images/blob_tracking.gif" width="400" />
+    <img src="./Images/yolo_control.gif" width="400" />
 </p>
 
 There's Notion Lecture Notes and Youtube video's about this project. 
@@ -103,10 +105,12 @@ $ rosrun image_view image_view image:=/csi_image
 Packages for controlling `RC Car` with `PCA9685` PWM driver.
 You need to install `Adafruit_PCA9685` python package first 
 
-There's two modes for controlling RC Car
+There's four modes for controlling RC Car
 
 * JoyStick Control
+* Keyboard Control
 * Blob Control
+* Yolo4 Control
 
 ```bash
 $ roscore
@@ -144,7 +148,7 @@ $ rosrun donkey_cv find_ball.py
 
 ### **1. joy_control**
 
-Control RC Car with logitech F710 game controller
+Control RC Car with game controller
 
 <p align="center">
     <img src="./Images/joy_control.gif" width="500" />
@@ -156,16 +160,35 @@ $ roscore
 # Jetson
 $ rosrun donkey_control joy_control.py
 
-# Laptop or ROS Slave PC
+# Laptop or Jetson
 $ roslaunch donkey_joy joy_teleop_axes.launch
 # or
 $ roslaunch donkey_joy joy_teleop_btns.launch
 
 ```
 
-### **2. blob_tracking**
+### **2. keyboard_control**
 
-Find the green box of the Jetson Nano on the screen and change the direction of the wheel accordingly.
+Control RC Car with keyboard
+
+<p align="center">
+    <img src="./Images/keyboard_control.gif" width="500" />
+</p>
+
+```bash
+$ roscore
+
+# Jetson
+$ rosrun teleop_twist_keyboard teleop_twist_keyboard.py
+
+# Laptop or Jetson
+$ roslaunch donkey_joy joy_teleop_axes.launch
+
+```
+
+### **3. blob_tracking**
+
+Find the any color box of the Jetson Nano on the screen and change the direction of the wheel accordingly.
 
 
 <p align="center">
@@ -190,38 +213,25 @@ rosrun image_view image_view image:=/blob/image_mask
 rosrun image_view image_view image:=/blob/image_blob
 ```
 
----
+### **4. Yolo4_tracking**
 
-Nothing
+Find the object of the Jetson Nano on the screen and change the direction of the wheel accordingly.
 
-```
-gst-launch-1.0 nvarguscamerasrc sensor_id=0 ! \
-   'video/x-raw(memory:NVMM),width=3280, height=2464, framerate=21/1, format=NV12' ! \
-   nvvidconv flip-method=2 ! 'video/x-raw,width=960, height=720' ! \
-   nvvidconv ! nvegltransform ! nveglglessink -e
 
-sudo apt-get install ros-melodic-cv-bridge
-sudo apt-get install ros-melodic-image-view
+<p align="center">
+    <img src="./Images/yolo_control.gif" width="500" />
+</p>
 
-rosrun csi_camera webcam_pub.py
-rosrun image_view image_view image:=/csi_image
 
-take photo
+```bash
+#terminal #1
+# camera image publish
+zeta@zeta-nano:~/catkin_ws$ roslaunch jetson_csi_cam jetson_csi_cam.launch width:=416 height:=416 fps:=15
 
-python range_detector.py --image frame0000.jpg --filter HSV --preview
+#terminal #2
+#object detect using Yolo_v4
+zeta@zeta-nano:~/catkin_ws$ roslaunch darknet_ros yolo_v4.launch
 
-rosrun donkey_cv find_ball.py
-
-rosrun image_view image_view image:=/csi_image
-rosrun image_view image_view image:=/webcam_image
-rosrun image_view image_view image:=/blob/image_mask
-rosrun image_view image_view image:=/blob/image_blob
-
-roslaunch donkey_control blob_control.launch 
-
-rosrun csi_camera csi_pub.py
-rosrun donkey_cv find_ball.py 
-rosrun donkey_control chase_the_ball.py 
-(env)  rosrun donkey_control blob_chase.py 
-
+#terminal #3
+zeta@zeta-nano:~/catkin_ws$ roslaunch donkey_control yolo_chase.launch
 ```

@@ -11,11 +11,13 @@ import rospy
 from threading import Thread
 from geometry_msgs.msg import Twist
 
+STEER_CENTER = 0
 STEER_STEP = 1024
+STEER_LIMIT = 4095
 SPEED_STEP = 1024
 
 speed_pulse = 0
-steering_pulse = 0
+steering_pulse = STEER_CENTER
 
 class PCA9685:
     """
@@ -71,9 +73,6 @@ class PWMThrottle:
     Wrapper over a PWM motor cotnroller to convert -1 to 1 throttle
     values to PWM pulses.
     """
-    MIN_THROTTLE = -1
-    MAX_THROTTLE =  1
-
     def __init__(self, controller=None,
                        max_pulse=4095,
                        min_pulse=-4095,
@@ -186,10 +185,10 @@ class Vehicle(object):
            speed_pulse = -4095 
            
         steering_pulse += msg.angular.z*STEER_STEP
-        if steering_pulse >  4095:
-           steering_pulse = 4095
-        if steering_pulse < -4095 :
-           steering_pulse = - 4095
+        if steering_pulse > (STEER_CENTER + STEER_LIMIT) :
+           steering_pulse = STEER_CENTER + STEER_LIMIT
+        if steering_pulse < (STEER_CENTER - STEER_LIMIT) :
+           steering_pulse = STEER_CENTER - STEER_LIMIT
 
         print(
             "speed_pulse : "

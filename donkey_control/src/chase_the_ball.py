@@ -87,8 +87,7 @@ class ChaseBall:
             # -- Get the control action
             steer_action, throttle_action = self.get_control_action()
 
-            rospy.loginfo("Steering = %3.1f" % (steer_action))
-	    rospy.loginfo("Throttle = %3.1f" % (throttle_action))
+            rospy.loginfo("Steering = %.2f, Throttle = %.2f", steer_action, throttle_action)
 
             # -- update the message
             self._message.linear.x = throttle_action
