@@ -17,7 +17,7 @@ import rospy
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Point
 
-K_LAT_DIST_TO_STEER = -2.5
+K_LAT_DIST_TO_STEER = 2.5
 K_LAT_DIST_TO_THROTTLE = 0.2
 #steering sensitivity parameter
 
