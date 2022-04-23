@@ -107,7 +107,7 @@ class PWMThrottle:
         )
         if left_motor_speed > 0:
 	        #rear motor
-  	        self.controller.pwm.set_pwm(self.controller.channel+ 5,0,left_pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+ 5,0,left_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+ 4,0,0)
             self.controller.pwm.set_pwm(self.controller.channel+ 3,0,4095)
             #front motor
@@ -116,7 +116,7 @@ class PWMThrottle:
             self.controller.pwm.set_pwm(self.controller.channel+ 8,0,0)
         else:
  	        #rear motor
-  	        self.controller.pwm.set_pwm(self.controller.channel+ 5,0,-left_pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+ 5,0,-left_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+ 3,0,0)
             self.controller.pwm.set_pwm(self.controller.channel+ 4,0,4095)
             #front motor
@@ -130,7 +130,7 @@ class PWMThrottle:
             self.controller.pwm.set_pwm(self.controller.channel+ 2,0,0) 
             self.controller.pwm.set_pwm(self.controller.channel+ 1,0,4095)
             #front motor
-	        self.controller.pwm.set_pwm(self.controller.channel+11,0,right_pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+11,0,right_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+ 9,0,4095)
             self.controller.pwm.set_pwm(self.controller.channel+10,0,0)
         else:
@@ -139,7 +139,7 @@ class PWMThrottle:
             self.controller.pwm.set_pwm(self.controller.channel+ 1,0,0) 
             self.controller.pwm.set_pwm(self.controller.channel+ 2,0,4095)
             #front motor
-	        self.controller.pwm.set_pwm(self.controller.channel+11,0,-right_pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+11,0,-right_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+10,0,4095)
             self.controller.pwm.set_pwm(self.controller.channel+ 9,0,0)
 
